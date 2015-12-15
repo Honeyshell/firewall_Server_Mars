@@ -28,6 +28,8 @@
 # $ sudo update-rc.d firewall.sh defaults 20 
 # $ sudo service firewall start
 
+# lire les logs avec journalctl -xn
+
 
 # On efface les règles précédentes pour partir sur de bonnes bases
 iptables -t filter -F 
