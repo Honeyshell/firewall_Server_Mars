@@ -99,6 +99,11 @@ sudo iptables -t filter -A OUTPUT -p udp --dport 123 -j ACCEPT
 # mail/IMAP		143				tcp
 # DNS			53				tcp et udp
 
+# Flood ou déni de service
+sudo iptables -A FORWARD -p tcp --syn -m limit --limit 1/second -j ACCEPT
+sudo iptables -A FORWARD -p udp -m limit --limit 1/second -j ACCEPT
+sudo iptables -A FORWARD -p icmp --icmp-type echo-request -m limit --limit 1/second -j ACCEPT
+
 
 
 
