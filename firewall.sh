@@ -1,6 +1,16 @@
 
 #!/bin/sh
 
+### BEGIN INIT INFO
+# Provides:          firewall.sh
+# Required-Start:    $syslog $network
+# Required-Stop:     $syslog $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start firewall daemon at boot time
+# Description:       Personalised Firewall scrip.
+### END INIT INFO
+
 # information (install sans github)
 # 1 - créer le fichier sous /etc/init.d/firewall
 # 2 - donner les droits : 
