@@ -52,6 +52,10 @@ iptables -t filter -A OUTPUT -o lo -j ACCEPT
 iptables -t filter -A INPUT -p icmp -j ACCEPT
 iptables -t filter -A OUTPUT -p icmp -j ACCEPT
 
+# HTTP
+iptables -t filter -A INPUT -p tcp --dport 80 -j ACCEPT
+iptables -t filter -A OUTPUT -p tcp --dport 80 -j ACCEPT
+
 # SSH / HTTPS
 iptables -t filter -A INPUT -p tcp --dport 443 -j ACCEPT
 iptables -t filter -A OUTPUT -p tcp --dport 443 -j ACCEPT
