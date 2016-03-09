@@ -30,6 +30,18 @@
 
 # lire les logs avec journalctl -xn
 
+# BEGIN NO-FIREWALL Permet d'enlever completement le firewall
+# mettre en commentaire les autres lignes
+# iptables -F
+# iptables -X
+# iptables -t nat -F
+# iptables -t nat -X
+# iptables -t mangle -F
+# iptables -t mangle -X
+# iptables -P INPUT ACCEPT
+# iptables -P FORWARD ACCEPT
+# iptables -P OUTPUT ACCEPT
+# END NO-FIREWALL
 
 # On efface les règles précédentes pour partir sur de bonnes bases
 iptables -t filter -F
