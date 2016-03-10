@@ -1,4 +1,3 @@
-
 #!/bin/sh
 
 ### BEGIN INIT INFO
@@ -14,11 +13,11 @@
 # information (install sans github)
 # 1 - créer le fichier sous /etc/init.d/firewall
 # 2 - donner les droits :
-#		$ sudo chmod +x /etc/init.d/firewall
-# 3	- tester le firewall avec la commande :
-#		$ sudo /etc/init.d/firewall
+#               $ sudo chmod +x /etc/init.d/firewall
+# 3     - tester le firewall avec la commande :
+#               $ sudo /etc/init.d/firewall
 # 4 - Indiquer d'exécuter le script au démarrage
-#		$ sudo update-rc.d firewall defaults 20
+#               $ sudo update-rc.d firewall defaults 20
 # 5 - Démarrage du firewall
 #       $ sudo service firewall start
 
@@ -31,7 +30,6 @@
 # lire les logs avec journalctl -xn
 
 # BEGIN NO-FIREWALL Permet d'enlever completement le firewall
-# mettre en commentaire les autres lignes
 # iptables -F
 # iptables -X
 # iptables -t nat -F
@@ -64,13 +62,13 @@ iptables -t filter -A OUTPUT -o lo -j ACCEPT
 iptables -t filter -A INPUT -p icmp -j ACCEPT
 iptables -t filter -A OUTPUT -p icmp -j ACCEPT
 
-# HTTP
-iptables -t filter -A INPUT -p tcp --dport 80 -j ACCEPT
-iptables -t filter -A OUTPUT -p tcp --dport 80 -j ACCEPT
-
 # SSH / HTTPS
 iptables -t filter -A INPUT -p tcp --dport 443 -j ACCEPT
 iptables -t filter -A OUTPUT -p tcp --dport 443 -j ACCEPT
+
+# SSH pour les machines locales
+iptables -t filter -A INPUT -p tcp -s 192.168.1.0/24 --dport 22 -j ACCEPT
+iptables -t filter -A OUTPUT -p tcp -s 192.168.1.0/24 --dport 22 -j ACCEPT
 
 # Transmission WebUI
 iptables -t filter -A OUTPUT -p tcp --dport 6001 -j ACCEPT
@@ -146,6 +144,20 @@ iptables -t filter -A OUTPUT -p udp --dport 123 -j ACCEPT
 # supplémentaire au début des filtres. Sans cela, votre serveur
 # deviendra inutilisable :
 # iptables -A OUTPUT -p tcp --dport 3260 -m state --state NEW,ESTABLISHED -j ACCEPT
+
+# CUPS : détection de l'imprimante sur le réseau
+iptables -t filter -A INPUT -p udp --dport 5353 -j ACCEPT
+iptables -t filter -A OUTPUT -p udp --dport 5353 -j ACCEPT
+# CUPS
+iptables -A INPUT  -p udp  --source 631  -m state --state NEW  -j ACCEPT
+iptables -A INPUT  -p tcp  --destination-port 631  -m state --state NEW  -j ACCEPT
+iptables -A INPUT  -p udp  --destination-port 631  -m state --state NEW  -j ACCEPT
+iptables -A INPUT  -p icmp --icmp-type echo-request  -j ACCEPT
+iptables -A INPUT  -p icmp --icmp-type echo-reply  -j ACCEPT
+iptables -A INPUT  -p icmp --icmp-type destination-unreachable  -j ACCEPT
+iptables -A INPUT  -p icmp --icmp-type source-quench -j ACCEPT
+iptables -A INPUT  -p icmp --icmp-type time-exceeded -j ACCEPT
+iptables -A INPUT  -p icmp --icmp-type parameter-problem -j ACCEPT
 
 # Flood ou déni de service
 iptables -A FORWARD -p tcp --syn -m limit --limit 1/second -j ACCEPT
