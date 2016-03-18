@@ -13,11 +13,11 @@
 # information (install sans github)
 # 1 - créer le fichier sous /etc/init.d/firewall
 # 2 - donner les droits :
-#               $ sudo chmod +x /etc/init.d/firewall
-# 3     - tester le firewall avec la commande :
-#               $ sudo /etc/init.d/firewall
+#		$ sudo chmod +x /etc/init.d/firewall
+# 3	- tester le firewall avec la commande :
+#		$ sudo /etc/init.d/firewall
 # 4 - Indiquer d'exécuter le script au démarrage
-#               $ sudo update-rc.d firewall defaults 20
+#		$ sudo update-rc.d firewall defaults 20
 # 5 - Démarrage du firewall
 #       $ sudo service firewall start
 
@@ -40,6 +40,13 @@
 # iptables -P FORWARD ACCEPT
 # iptables -P OUTPUT ACCEPT
 # END NO-FIREWALL
+
+# NOTE
+# trouver les ports des services
+# i.e.: grep sane /etc/services
+# commande pour reloader le firewall
+# sudo service firewall.sh stop && sudo systemctl daemon-reload && sudo service firewall.sh start
+
 
 # On efface les règles précédentes pour partir sur de bonnes bases
 iptables -t filter -F
@@ -75,10 +82,10 @@ iptables -t filter -A OUTPUT -p tcp --dport 6001 -j ACCEPT
 iptables -t filter -A INPUT -p tcp --dport 6001 -j ACCEPT
 
 # DNS
-iptables -t filter -A OUTPUT -p tcp --dport 53 -j ACCEPT
-iptables -t filter -A OUTPUT -p udp --dport 53 -j ACCEPT
-iptables -t filter -A INPUT -p tcp --dport 53 -j ACCEPT
-iptables -t filter -A INPUT -p udp --dport 53 -j ACCEPT
+iptables -t filter -A OUTPUT -p tcp -s 192.168.1.0/24 --dport 53 -j ACCEPT
+iptables -t filter -A OUTPUT -p udp -s 192.168.1.0/24 --dport 53 -j ACCEPT
+iptables -t filter -A INPUT -p tcp -s 192.168.1.0/24 --dport 53 -j ACCEPT
+iptables -t filter -A INPUT -p udp -s 192.168.1.0/24 --dport 53 -j ACCEPT
 
 # SERVER WEB APACHE
 iptables -t filter -A OUTPUT -p tcp --dport 80 -j ACCEPT
@@ -91,7 +98,8 @@ iptables -t filter -A INPUT -p tcp --dport 8443 -j ACCEPT
 # Ajouter -s 192.168.1.0/24 pour mettre en réseau local
 iptables -t filter -A INPUT -p tcp -s 192.168.1.0/24 --dport 137:139 -j ACCEPT
 iptables -t filter -A OUTPUT -p tcp -s 192.168.1.0/24 --dport 137:139 -j ACCEPT
-
+iptables -t filter -A INPUT -p udp -s 192.168.1.0/24 --dport 137:139 -j ACCEPT
+iptables -t filter -A OUTPUT -p udp -s 192.168.1.0/24 --dport 137:139 -j ACCEPT
 iptables -t filter -A INPUT -p tcp -s 192.168.1.0/24 --dport 445 -j ACCEPT
 iptables -t filter -A OUTPUT -p tcp -s 192.168.1.0/24 --dport 445 -j ACCEPT
 
@@ -105,6 +113,12 @@ iptables -t filter -A OUTPUT -p tcp -s 192.168.1.0/24 --dport 445 -j ACCEPT
 #SWAT
 iptables -t filter -A INPUT -p tcp -s 192.168.1.0/24 --dport 901 -j ACCEPT
 iptables -t filter -A OUTPUT -p tcp -s 192.168.1.0/24 --dport 901 -j ACCEPT
+
+# Ouverture port 110 pour pop3 vers gmail
+iptables -t filter -A INPUT  -p tcp --dport 110 -j ACCEPT
+iptables -t filter -A OUTPUT -p tcp --dport 110 -j ACCEPT
+iptables -t filter -A INPUT  -p tcp --dport 995 -j ACCEPT
+iptables -t filter -A OUTPUT -p tcp --dport 995 -j ACCEPT
 
 # FTP
 # iptables -t filter -A OUTPUT -p tcp --dport 20:21 -j ACCEPT
@@ -121,8 +135,8 @@ iptables -t filter -A OUTPUT -p tcp -s 192.168.1.0/24 --dport 901 -j ACCEPT
 # iptables -t filter -A OUTPUT -p tcp --dport 25 -j ACCEPT
 
 # Mail POP3
-# iptables -t filter -A INPUT -p tcp --dport 110 -j ACCEPT
-# iptables -t filter -A OUTPUT -p tcp --dport 110 -j ACCEPT
+iptables -t filter -A INPUT -p tcp --dport 110 -j ACCEPT
+iptables -t filter -A OUTPUT -p tcp --dport 110 -j ACCEPT
 
 # Mail POP3S:995
 # iptables -t filter -A INPUT -p tcp --dport 995 -j ACCEPT
@@ -146,8 +160,8 @@ iptables -t filter -A OUTPUT -p udp --dport 123 -j ACCEPT
 # iptables -A OUTPUT -p tcp --dport 3260 -m state --state NEW,ESTABLISHED -j ACCEPT
 
 # CUPS : détection de l'imprimante sur le réseau
-iptables -t filter -A INPUT -p udp --dport 5353 -j ACCEPT
-iptables -t filter -A OUTPUT -p udp --dport 5353 -j ACCEPT
+iptables -t filter -A INPUT -p udp -s 192.168.1.0/24 --dport 5353 -j ACCEPT
+iptables -t filter -A OUTPUT -p udp -s 192.168.1.0/24 --dport 5353 -j ACCEPT
 # CUPS
 iptables -A INPUT  -p udp  --source 631  -m state --state NEW  -j ACCEPT
 iptables -A INPUT  -p tcp  --destination-port 631  -m state --state NEW  -j ACCEPT
@@ -158,6 +172,12 @@ iptables -A INPUT  -p icmp --icmp-type destination-unreachable  -j ACCEPT
 iptables -A INPUT  -p icmp --icmp-type source-quench -j ACCEPT
 iptables -A INPUT  -p icmp --icmp-type time-exceeded -j ACCEPT
 iptables -A INPUT  -p icmp --icmp-type parameter-problem -j ACCEPT
+
+# SANE SCANNER : détection du scanner sur le réseau
+iptables -t filter -A INPUT -p tcp -s 192.168.1.0/24 --dport 6566 -j ACCEPT
+iptables -t filter -A INPUT -p tcp -s 192.168.1.0/24 --dport 10000:10100 -j ACCEPT
+iptables -t filter -A OUTPUT -p tcp -s 192.168.1.0/24 --dport 6566 -j ACCEPT
+iptables -t filter -A OUTPUT -p tcp -s 192.168.1.0/24 --dport 10000:10100 -j ACCEPT
 
 # Flood ou déni de service
 iptables -A FORWARD -p tcp --syn -m limit --limit 1/second -j ACCEPT
